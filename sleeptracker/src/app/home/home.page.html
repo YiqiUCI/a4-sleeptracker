@@ -1,20 +1,132 @@
-<ion-header [translucent]="true">
+<ion-header>
   <ion-toolbar>
-    <ion-title>
-      Blank
-    </ion-title>
+    <ion-title>Sleep Tracker</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Blank</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content>
+  <main class="tracker">
+    <ion-segment [(ngModel)]="selectedLog" aria-label="Log type">
+      <ion-segment-button value="overnight">
+        <ion-label>Overnight</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="sleepiness">
+        <ion-label>Sleepiness</ion-label>
+      </ion-segment-button>
+    </ion-segment>
 
-  <div id="container">
-    <strong>Ready to create an app?</strong>
-    <p>Start with Ionic <a target="_blank" rel="noopener noreferrer" href="https://ionicframework.com/docs/components">UI Components</a></p>
-  </div>
+    @if (storageError) {
+      <p role="alert">{{ storageError }}</p>
+    } @else if (!ready) {
+      <p role="status">Loading your logs…</p>
+    } @else if (selectedLog === 'overnight') {
+      <section class="panel" aria-labelledby="overnight-heading">
+        <h1 id="overnight-heading">Log overnight sleep</h1>
+        <form (ngSubmit)="saveOvernight()">
+          <fieldset [disabled]="saving" aria-labelledby="overnight-heading">
+            <div class="field">
+              <label for="bedtime">Bedtime</label>
+              <button id="bedtime" class="date-trigger" type="button" aria-haspopup="dialog">
+                {{ bedtime ? (bedtime | date:'MMM d, y, h:mm a') : 'Choose date and time' }}
+              </button>
+              <ion-modal trigger="bedtime" class="date-picker" aria-label="Choose bedtime">
+                <ng-template>
+                  <ion-datetime presentation="date-time" locale="en-US" [preferWheel]="true" [showDefaultButtons]="true"
+                    [(ngModel)]="bedtime" [ngModelOptions]="{ standalone: true }"></ion-datetime>
+                </ng-template>
+              </ion-modal>
+            </div>
+            <div class="field">
+              <label for="wakeTime">Wake time</label>
+              <button id="wakeTime" class="date-trigger" type="button" aria-haspopup="dialog">
+                {{ wakeTime ? (wakeTime | date:'MMM d, y, h:mm a') : 'Choose date and time' }}
+              </button>
+              <ion-modal trigger="wakeTime" class="date-picker" aria-label="Choose wake time">
+                <ng-template>
+                  <ion-datetime presentation="date-time" locale="en-US" [preferWheel]="true" [showDefaultButtons]="true"
+                    [(ngModel)]="wakeTime" [ngModelOptions]="{ standalone: true }"></ion-datetime>
+                </ng-template>
+              </ion-modal>
+            </div>
+          </fieldset>
+          <div class="actions">
+            <ion-button type="submit" [disabled]="saving">Save sleep</ion-button>
+            <ion-button type="button" fill="clear" (click)="clearOvernight()" [disabled]="saving">Clear</ion-button>
+          </div>
+          <p class="form-message" role="status">{{ overnightMessage }}</p>
+        </form>
+      </section>
+
+      <section class="panel" aria-labelledby="overnight-history">
+        <h2 id="overnight-history">Overnight history</h2>
+        <ion-list lines="none">
+          @for (entry of sleepService.overnightData; track entry.id) {
+            <ion-item>
+              <ion-label class="ion-text-wrap">
+                <h3>{{ entry.summaryString() }}</h3>
+                <p>Bedtime: {{ entry.sleepStart | date:'MMM d, y, h:mm a' }}</p>
+                <p>Wake time: {{ entry.sleepEnd | date:'MMM d, y, h:mm a' }}</p>
+              </ion-label>
+            </ion-item>
+          } @empty {
+            <p class="empty">No overnight logs yet.</p>
+          }
+        </ion-list>
+      </section>
+    } @else {
+      <section class="panel" aria-labelledby="sleepiness-heading">
+        <h1 id="sleepiness-heading">Log daytime sleepiness</h1>
+        <form (ngSubmit)="saveSleepiness()">
+          <fieldset [disabled]="saving" aria-labelledby="sleepiness-heading">
+            <div class="field">
+              <label for="sleepinessLevel">Stanford Sleepiness Scale</label>
+              <select id="sleepinessLevel" name="sleepinessLevel" [(ngModel)]="sleepinessLevel" required>
+                <option [ngValue]="null" disabled>Choose a rating</option>
+                @for (description of sleepinessLevels; track $index) {
+                  <option [ngValue]="$index + 1">{{ $index + 1 }} — {{ description }}</option>
+                }
+              </select>
+              @if (sleepinessLevel !== null) {
+                <p class="hint">{{ sleepinessLevels[sleepinessLevel - 1] }}</p>
+              }
+            </div>
+            <div class="field">
+              <label for="sleepinessTime">Date and time (optional)</label>
+              <button id="sleepinessTime" class="date-trigger" type="button" aria-haspopup="dialog" aria-describedby="sleepiness-time-hint">
+                {{ sleepinessTime ? (sleepinessTime | date:'MMM d, y, h:mm a') : 'Choose date and time' }}
+              </button>
+              <ion-modal trigger="sleepinessTime" class="date-picker" aria-label="Choose sleepiness date and time">
+                <ng-template>
+                  <ion-datetime presentation="date-time" locale="en-US" [preferWheel]="true" [showDefaultButtons]="true"
+                    [(ngModel)]="sleepinessTime" [ngModelOptions]="{ standalone: true }"></ion-datetime>
+                </ng-template>
+              </ion-modal>
+              <p id="sleepiness-time-hint" class="hint">Leave blank to use the current time.</p>
+            </div>
+          </fieldset>
+          <div class="actions">
+            <ion-button type="submit" [disabled]="saving">Save sleepiness</ion-button>
+            <ion-button type="button" fill="clear" (click)="clearSleepiness()" [disabled]="saving">Clear</ion-button>
+          </div>
+          <p class="form-message" role="status">{{ sleepinessMessage }}</p>
+        </form>
+      </section>
+
+      <section class="panel" aria-labelledby="sleepiness-history">
+        <h2 id="sleepiness-history">Sleepiness history</h2>
+        <ion-list lines="none">
+          @for (entry of sleepService.sleepinessData; track entry.id) {
+            <ion-item>
+              <ion-label class="ion-text-wrap">
+                <h3>{{ entry.summaryString() }}</h3>
+                <p>{{ entry.loggedAt | date:'MMM d, y, h:mm a' }}</p>
+              </ion-label>
+            </ion-item>
+          } @empty {
+            <p class="empty">No sleepiness logs yet.</p>
+          }
+        </ion-list>
+      </section>
+    }
+  </main>
 </ion-content>

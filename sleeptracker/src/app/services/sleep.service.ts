@@ -1,50 +1,58 @@
 import { Injectable } from '@angular/core';
-import { SleepData } from '../data/sleep-data';
+import { Preferences } from '@capacitor/preferences';
 import { OvernightSleepData } from '../data/overnight-sleep-data';
 import { StanfordSleepinessData } from '../data/stanford-sleepiness-data';
+
+interface SavedLogs {
+  overnight: { id: string; loggedAt: string; sleepStart: string; sleepEnd: string }[];
+  sleepiness: { id: string; loggedAt: string; loggedValue: number }[];
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class SleepService {
-	private static LoadDefaultData:boolean = true;
-	public static AllSleepData:SleepData[] = [];
-	public static AllOvernightData:OvernightSleepData[] = [];
-	public static AllSleepinessData:StanfordSleepinessData[] = [];
+  private readonly storageKey = 'sleeptracker.logs';
+  overnightData: OvernightSleepData[] = [];
+  sleepinessData: StanfordSleepinessData[] = [];
 
-	constructor() {
-		if(SleepService.LoadDefaultData) {
-			this.addDefaultData();
-		SleepService.LoadDefaultData = false;
-	}
-	}
+  async loadData() {
+    const { value } = await Preferences.get({ key: this.storageKey });
+    if (value === null) {
+      return;
+    }
 
-	private addDefaultData() {
-		var goToBed = new Date();
-		goToBed.setDate(goToBed.getDate() - 1); //set to yesterday
-		goToBed.setHours(1, 3, 0); //1:03am
-		var wakeUp = new Date();
-		wakeUp.setTime(goToBed.getTime() + 8 * 60 * 60 * 1000); //Sleep for exactly eight hours, waking up at 9:03am
-		this.logOvernightData(new OvernightSleepData(goToBed, wakeUp)); // add that person was asleep 1am-9am yesterday
-		var sleepinessDate = new Date();
-		sleepinessDate.setDate(sleepinessDate.getDate() - 1); //set to yesterday
-		sleepinessDate.setHours(14, 38, 0); //2:38pm
-		this.logSleepinessData(new StanfordSleepinessData(4, sleepinessDate)); // add sleepiness at 2pm
-		goToBed = new Date();
-		goToBed.setDate(goToBed.getDate() - 1); //set to yesterday
-		goToBed.setHours(23, 11, 0); //11:11pm
-		wakeUp = new Date();
-		wakeUp.setTime(goToBed.getTime() + 9 * 60 * 60 * 1000); //Sleep for exactly nine hours
-		this.logOvernightData(new OvernightSleepData(goToBed, wakeUp));
-	}
+    // JSON keeps dates as strings, so turn them back into Date objects.
+    const logs: SavedLogs = JSON.parse(value);
+    this.overnightData = logs.overnight.map(entry => {
+      const sleep = new OvernightSleepData(new Date(entry.sleepStart), new Date(entry.sleepEnd));
+      sleep.id = entry.id;
+      sleep.loggedAt = new Date(entry.loggedAt);
+      return sleep;
+    });
+    this.sleepinessData = logs.sleepiness.map(entry => {
+      const sleepiness = new StanfordSleepinessData(entry.loggedValue, new Date(entry.loggedAt));
+      sleepiness.id = entry.id;
+      return sleepiness;
+    });
+  }
 
-	public logOvernightData(sleepData:OvernightSleepData) {
-		SleepService.AllSleepData.push(sleepData);
-		SleepService.AllOvernightData.push(sleepData);
-	}
+  async logOvernightData(sleepData: OvernightSleepData) {
+    const overnight = [sleepData, ...this.overnightData];
+    await this.saveData(overnight, this.sleepinessData);
+    this.overnightData = overnight;
+  }
 
-	public logSleepinessData(sleepData:StanfordSleepinessData) {
-		SleepService.AllSleepData.push(sleepData);
-		SleepService.AllSleepinessData.push(sleepData);
-	}
+  async logSleepinessData(sleepData: StanfordSleepinessData) {
+    const sleepiness = [sleepData, ...this.sleepinessData];
+    await this.saveData(this.overnightData, sleepiness);
+    this.sleepinessData = sleepiness;
+  }
+
+  private async saveData(overnight: OvernightSleepData[], sleepiness: StanfordSleepinessData[]) {
+    await Preferences.set({
+      key: this.storageKey,
+      value: JSON.stringify({ overnight, sleepiness })
+    });
+  }
 }

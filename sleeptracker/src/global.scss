@@ -35,3 +35,21 @@
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import '@ionic/angular/css/palettes/dark.system.css';
+
+ion-modal.date-picker {
+  --width: min(360px, calc(100% - 16px));
+  --height: fit-content;
+  --border-radius: 12px;
+}
+
+ion-modal.date-picker ion-datetime {
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+}
+
+@media (max-width: 375px) {
+  ion-modal.date-picker ion-datetime::part(wheel-item) {
+    font-size: 1rem;
+  }
+}
