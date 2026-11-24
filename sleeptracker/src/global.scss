@@ -37,12 +37,22 @@
 @import '@ionic/angular/css/palettes/dark.system.css';
 
 ion-modal.date-picker {
+  color-scheme: dark;
+  --ion-background-color: #141e34;
+  --ion-text-color: #f5f7ff;
+  --ion-color-primary: #adbaff;
+  --ion-color-primary-rgb: 173, 186, 255;
+  --ion-color-primary-contrast: #101934;
   --width: min(360px, calc(100% - 16px));
   --height: fit-content;
   --border-radius: 12px;
 }
 
 ion-modal.date-picker ion-datetime {
+  --background: #141e34;
+  --title-color: #f5f7ff;
+  --wheel-fade-background-rgb: 20, 30, 52;
+  --wheel-highlight-background: rgba(173, 186, 255, 0.13);
   width: 100%;
   min-width: 0;
   max-width: none;
@@ -51,5 +61,65 @@ ion-modal.date-picker ion-datetime {
 @media (max-width: 375px) {
   ion-modal.date-picker ion-datetime::part(wheel-item) {
     font-size: 1rem;
+  }
+}
+
+app-home {
+  .night-toolbar {
+    --background: var(--night);
+    --color: var(--text);
+    --min-height: 52px;
+    border-bottom: 1px solid #354363;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    max-width: var(--shell-width);
+    margin: 0 auto;
+    padding: 0 clamp(0.8rem, 4vw, 1.15rem);
+    font-size: 1.15rem;
+    font-weight: 720;
+  }
+
+  .brand ion-icon {
+    font-size: 1.5rem;
+    color: var(--accent);
+  }
+
+  .night-footer {
+    background: #0e1729;
+    border-top: 1px solid #3e4e72;
+    padding-bottom: var(--ion-safe-area-bottom, 0px);
+  }
+
+  .night-footer ion-segment {
+    --background: transparent;
+    max-width: var(--shell-width);
+    margin: 0 auto;
+    padding: 0.46rem clamp(0.75rem, 4vw, 1.1rem);
+    gap: 0.3rem;
+    border-radius: 0;
+  }
+
+  .night-footer ion-segment-button {
+    --color: #d2dbef;
+    --color-checked: #c3ccff;
+    --indicator-color: #243253;
+    --indicator-box-shadow: none;
+    --border-radius: 14px;
+    --border-width: 0;
+    --padding-start: 0.35rem;
+    --padding-end: 0.35rem;
+    min-width: 0;
+    min-height: 47px;
+    font-size: 0.94rem;
+    font-weight: 660;
+    text-transform: none;
+  }
+
+  .night-footer ion-segment-button ion-icon {
+    font-size: 1.28rem;
   }
 }

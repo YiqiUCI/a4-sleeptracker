@@ -17,7 +17,8 @@
 
 3. What online resources did you consult when completing this assignment? (list specific URLs)
    I used slack, canvas files, openai to help to finished code. I asked Codex to help
-   me understand the requirements and content of this assignment.
+   me understand the requirements and content of this assignment. I also asked OpenAI to generate a calm moonlit lake and an iOS-style mockup with dark blue colors, large text, and two tabs at the bottom.
+   I saved the lake image as a JPG and used it as the background for the latest-record cards.
    During that process, I also asked about methods and options for storing information,
    and ultimately used Capacitor Preferences to save both types of records.
    I also used it to check the code.

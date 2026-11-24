@@ -2,9 +2,11 @@ import { Component, OnInit } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
-  IonHeader, IonToolbar, IonTitle, IonContent, IonSegment, IonSegmentButton,
-  IonLabel, IonButton, IonList, IonItem, IonModal, IonDatetime
+  IonHeader, IonToolbar, IonContent, IonFooter, IonIcon, IonSegment, IonSegmentButton,
+  IonLabel, IonButton, IonModal, IonDatetime
 } from '@ionic/angular/standalone';
+import { addIcons } from 'ionicons';
+import { calendarOutline, chevronDownOutline, moonOutline, sunnyOutline } from 'ionicons/icons';
 import { SleepService } from '../services/sleep.service';
 import { OvernightSleepData } from '../data/overnight-sleep-data';
 import { StanfordSleepinessData } from '../data/stanford-sleepiness-data';
@@ -14,8 +16,8 @@ import { StanfordSleepinessData } from '../data/stanford-sleepiness-data';
   templateUrl: 'home.page.html',
   styleUrls: ['home.page.scss'],
   imports: [
-    DatePipe, FormsModule, IonHeader, IonToolbar, IonTitle, IonContent,
-    IonSegment, IonSegmentButton, IonLabel, IonButton, IonList, IonItem, IonModal, IonDatetime
+    DatePipe, FormsModule, IonHeader, IonToolbar, IonContent, IonFooter, IonIcon,
+    IonSegment, IonSegmentButton, IonLabel, IonButton, IonModal, IonDatetime
   ],
 })
 export class HomePage implements OnInit {
@@ -31,7 +33,9 @@ export class HomePage implements OnInit {
   ready = false;
   saving = false;
 
-  constructor(public sleepService: SleepService) { }
+  constructor(public sleepService: SleepService) {
+    addIcons({ calendarOutline, chevronDownOutline, moonOutline, sunnyOutline });
+  }
 
   async ngOnInit() {
     try {
